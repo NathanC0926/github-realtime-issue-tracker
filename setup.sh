@@ -1,5 +1,6 @@
 #!/bin/bash
 # chmod +x setup.sh
+# ./setup.sh
 # Stop script on error
 set -e
 
