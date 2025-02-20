@@ -1,0 +1,26 @@
+# Ignore data folder and all its contents
+data/
+
+# Ignore metastore database
+metastore_db/
+
+# Ignore all log files
+*.log
+
+# Ignore virtual environment
+venv/
+
+# Ignore compiled Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore environment variables / secrets
+.env
