@@ -1,5 +1,6 @@
 # Ignore data folder and all its contents
 data/
+datap/
 
 # Ignore metastore database
 metastore_db/
