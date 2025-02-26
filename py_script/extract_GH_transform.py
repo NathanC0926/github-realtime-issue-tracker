@@ -1,59 +1,66 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+import os
+
+# Flag to control Azure upload
+upload_to_azure = False # Set to True to upload to Azure
 
 # Start Spark session
 spark = (
     SparkSession.builder.appName("FilterGHJsonPYTHON")
-    .config("spark.sql.catalogImplementation", "hive")
-    .enableHiveSupport()
     .getOrCreate()
 )
 
-df = spark.read.json("../datap/*.json.gz")
-df = df.filter(df["type"].isin("IssuesEvent", "IssueCommentEvent"))
-df.createOrReplaceTempView("df")
+# Read JSON files from the directory
+df = spark.read.json("datap/*.json.gz")
 
-df = spark.sql("""
-WITH opened_issues AS (
-    SELECT 
-        payload.issue.id AS issue_id, 
-        MIN(created_at) AS opened_at,  -- Pick first open event per issue
-        FIRST(payload.issue.author_association) AS author_association,  
-        FIRST(payload.issue.title) AS title,
-        FIRST(payload.issue.labels) AS labels,
-        FIRST(payload.issue.state) AS state,
-        FIRST(payload.issue.state_reason) AS state_reason,
-        FIRST(payload.issue.body) AS body
-    FROM df
-    WHERE type = 'IssuesEvent' 
-      AND (payload.action = 'opened' OR payload.action = 'reopened')
-    GROUP BY payload.issue.id
-), 
+# Filter for IssuesEvent
+df = df.filter(df["type"] == "IssuesEvent")
 
-closed_issues AS (
-    SELECT 
-        payload.issue.id AS issue_id, 
-        MAX(created_at) AS closed_at  -- Pick last closed event per issue
-    FROM df
-    WHERE type = 'IssuesEvent' 
-      AND payload.action = 'closed'
-    GROUP BY payload.issue.id
+df = df.select(
+    col("actor"),
+    col("created_at"),
+    col("id").alias("event_id"),
+    col("org"),
+    col("payload.action"),
+    col("payload.issue")
 )
 
-SELECT 
-    o.issue_id,
-    o.opened_at,
-    c.closed_at,
-    TIMESTAMPDIFF(SECOND, o.opened_at, c.closed_at) AS time_to_close_seconds,
-    o.author_association,
-    o.title,
-    o.state,
-    o.state_reason,
-    o.body
-FROM opened_issues o
-JOIN closed_issues c 
-ON o.issue_id = c.issue_id
-WHERE c.closed_at >= o.opened_at AND o.state != 'open' -- Ensure closed_at is after opened_at
-ORDER BY time_to_close_seconds DESC;
-       """)
-df.show()
+if upload_to_azure:
+    try:
+        from azure.storage.filedatalake import DataLakeServiceClient
+
+        # Azure credentials
+        account_name = "your_storage_account_name"
+        account_key = "your_storage_account_key"
+        container_name = "your_container_name"
+        directory_name = "your_directory_name"
+        parquet_filename = "filtered_issues_events.parquet"
+
+        # Authenticate and create a client
+        service_client = DataLakeServiceClient(
+            account_url=f"https://{account_name}.dfs.core.windows.net",
+            credential=account_key
+        )
+
+        # Get the file system client
+        file_system_client = service_client.get_file_system_client(container_name)
+
+        # Upload directly from Spark DataFrame to Azure Data Lake
+        azure_path = f"abfss://{container_name}@{account_name}.dfs.core.windows.net/{directory_name}/{parquet_filename}"
+        
+        df.write.mode("overwrite").parquet(azure_path)
+
+        print("Parquet file successfully uploaded to Azure Data Lake Gen2.")
+
+    except Exception as e:
+        print(f"Azure upload failed: {e}")
+
+else:
+    # Save locally
+    parquet_file = "./filtered_issues_events.parquet"
+    df.write.mode("overwrite").parquet(parquet_file)
+    print(f"Parquet file saved locally: {parquet_file}")
+
+# Stop Spark session
 spark.stop()
