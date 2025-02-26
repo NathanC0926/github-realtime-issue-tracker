@@ -18,8 +18,8 @@ BRONZE_PATH = f"abfss://{CONTAINER_NAME}@{STORAGE_ACCOUNT}.dfs.core.windows.net/
 # Initialize Spark session with Azure ADLS support
 spark = SparkSession.builder \
     .appName("LoadGHArchiveData") \
-    .config("spark.driver.memory", "8g") \  # 8GB for driver
-    .config("spark.executor.memory", "8g") \  # 8GB per executor
+    .config("spark.driver.memory", "8g") \
+    .config("spark.executor.memory", "8g") \
     .config("spark.jars.packages", "org.apache.hadoop:hadoop-azure:3.3.1,com.microsoft.azure:azure-storage:8.6.6") \
     .config("spark.hadoop.fs.azure", "org.apache.hadoop.fs.azure.NativeAzureFileSystem") \
     .config(f"spark.hadoop.fs.azure.account.key.{STORAGE_ACCOUNT}.dfs.core.windows.net", STORAGE_ACCOUNT_KEY) \
