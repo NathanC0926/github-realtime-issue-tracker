@@ -4,17 +4,22 @@ import subprocess
 import tempfile
 import os
 from datetime import datetime, timedelta
+from dotenv import load_dotenv  
+
+# Load environment variables from .env file
+load_dotenv()
+STORAGE_ACCOUNT_KEY = os.getenv("STORAGE_ACCOUNT_KEY").strip()  
 
 # Define Azure Storage Account & Container
-STORAGE_ACCOUNT = "your_storage_account"
-CONTAINER_NAME = "your_container"
-AZURE_ADLS_PATH = f"abfss://{CONTAINER_NAME}@{STORAGE_ACCOUNT}.dfs.core.windows.net/github/issues_events"
+STORAGE_ACCOUNT = "team13adls"
+CONTAINER_NAME = "github-realtime-issue"
+BRONZE_PATH = f"abfss://{CONTAINER_NAME}@{STORAGE_ACCOUNT}.dfs.core.windows.net/bronze/GH_archive_raw"
 
 # Initialize Spark session with Azure ADLS support
 spark = SparkSession.builder \
     .appName("LoadGHArchiveData") \
     .config("spark.hadoop.fs.azure", "org.apache.hadoop.fs.azure.NativeAzureFileSystem") \
-    .config(f"spark.hadoop.fs.azure.account.key.{STORAGE_ACCOUNT}.dfs.core.windows.net", "your_account_key") \
+    .config(f"spark.hadoop.fs.azure.account.key.{STORAGE_ACCOUNT}.dfs.core.windows.net", STORAGE_ACCOUNT_KEY) \
     .getOrCreate()
 
 # Define start and end timestamps (Loop over 1 year of data)
@@ -55,13 +60,18 @@ while current_date <= end_date:
             col("payload.issue")
         )
 
-        # Define hourly ADLS path (Each hour saved separately)
-        adls_hourly_path = f"{AZURE_ADLS_PATH}/year={current_date.year}/month={current_date.month}/day={current_date.day}/hour={current_date.hour}"
+        # Add partition columns to the DataFrame
+        df = df.withColumn("year", col("created_at").substr(1, 4)) \
+               .withColumn("month", col("created_at").substr(6, 2)) \
+               .withColumn("day", col("created_at").substr(9, 2))
 
-        # Save DataFrame as Parquet to ADLS Gen2
-        df.write.mode("overwrite").parquet(adls_hourly_path)
+        # Define ADLS save path (Partitioned by year/month/day)
+        adls_daily_path = f"{BRONZE_PATH}"
 
-        print(f"Successfully uploaded {formatted_date} to {adls_hourly_path}")
+        # Save DataFrame as Parquet to ADLS Gen2 with partitioning
+        df.write.mode("append").partitionBy("year", "month", "day").parquet(adls_daily_path)
+
+        print(f"Successfully uploaded {formatted_date} to {adls_daily_path}")
 
     except Exception as e:
         print(f"Error processing {formatted_date}: {str(e)}")
@@ -76,4 +86,3 @@ while current_date <= end_date:
 
 print("All hourly data processing completed!")
 spark.stop()
-

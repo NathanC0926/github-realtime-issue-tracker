@@ -3,3 +3,4 @@ sql-magic
 nbqa
 prefect 
 azure-storage-file-datalake
+python-dotenv
