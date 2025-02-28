@@ -31,7 +31,7 @@ BRONZE_PATH = f"abfss://{CONTAINER_NAME}@{STORAGE_ACCOUNT}.dfs.core.windows.net/
 spark = SparkSession.builder \
     .appName("LoadGHArchiveData") \
     .config("spark.driver.memory", "8g") \
-    .config("spark.executor.memory", "8g") \
+    .config("spark.executor.memory", "6g") \
     .config("spark.jars.packages",
             "org.apache.hadoop:hadoop-azure:3.3.1,"
             "com.microsoft.azure:azure-storage:8.6.6,"
@@ -82,8 +82,8 @@ def download_file(url, output_path, max_retries=3):
     return False
 
 # Date range setup
-start_date = datetime(2024, 3, 7, 0)
-end_date = datetime(2024, 3, 31, 0)  # Adjusted for testing
+start_date = datetime(2024, 3, 6, 0)
+end_date = datetime(2024, 3, 14, 0)  # Adjusted for testing
 
 current_date = start_date
 while current_date <= end_date:
