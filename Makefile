@@ -2,17 +2,17 @@
 DOCKER_COMPOSE = docker-compose -f synapse/docker-compose.yml
 
 # Start Docker Containers
-start:
+up:
 	@echo "🚀 Starting Docker Containers..."
 	$(DOCKER_COMPOSE) up -d
 
 # Stop Docker Containers
-stop:
+down:
 	@echo "🛑 Stopping Docker Containers..."
 	$(DOCKER_COMPOSE) down
 
 # Restart Docker Containers
-restart: stop start
+restart: down up
 
 # Rebuild Docker Images and Restart
 rebuild:
