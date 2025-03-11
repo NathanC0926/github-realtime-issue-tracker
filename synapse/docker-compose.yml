@@ -4,7 +4,6 @@ services:
   spark-iceberg:
     image: tabulario/spark-iceberg
     container_name: spark-iceberg
-    build: spark/
     networks:
       iceberg_net:
     depends_on:
@@ -13,6 +12,7 @@ services:
     volumes:
       - ./warehouse:/home/iceberg/warehouse
       - ./notebooks:/home/iceberg/notebooks/notebooks
+      - ../data:/data
     environment:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
