@@ -1,7 +1,7 @@
 # GitHub Realtime Issue Tracker
 
 ## 🚀 Setup Instructions
-Prereq: Docker
+***Prerequisites: Docker***
 
 1. **Run the Setup Using Make. For the first-time setup, run:**
     ```bash
