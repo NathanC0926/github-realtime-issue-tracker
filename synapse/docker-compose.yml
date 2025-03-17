@@ -11,18 +11,23 @@ services:
       - ./warehouse:/home/iceberg/warehouse
       - ./notebooks:/home/iceberg/notebooks/notebooks
       - ../data:/data
+      - ./requirements.txt:/home/iceberg/requirements.txt
     environment:
       - AWS_ACCESS_KEY_ID=admin
       - AWS_SECRET_ACCESS_KEY=password
       - AWS_REGION=us-east-1
     ports:
       - 8888:8888  # Jupyter Notebook
-      - 8080:8080  # Spark UI
+      - 4040:4040  # Spark UI
+      - 4041:4041  # Spark UI
+      - 4042:4042  # Spark UI
+      - 4043:4043  # Spark UI
+      - 4044:4044  # Spark UI
       - 10000:10000  # Spark Thrift Server
       - 10001:10001
     entrypoint: |
       /bin/sh -c "
-      pip install sql-magic sparksql-magic;
+      pip install -r /home/iceberg/requirements.txt;
       cd /home/iceberg/notebooks/notebooks;
       jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --NotebookApp.token='' --NotebookApp.password='';
       "
