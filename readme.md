@@ -7,17 +7,20 @@
    git clone https://github.com/YOUR-USERNAME/github-realtime-issue-tracker.git
    cd github-realtime-issue-tracker
     ```
-2. **Run the setup script to initialize the environment**
-```bash
-./setup.sh
-```
-***This will:***
-- Set up a virtual environment
-- Install required dependencies (pyspark, sql-magic)
-- Create an empty data/ folder if it doesn't exist
+2. **Run the Setup Using Make. For the first-time setup, run:**
+    ```bash
+    make up
+    ```
+    ***Look at the Makefile for more commands.***
+    
 3. **📥 Downloading the Dataset**
-```bash
-cd data
-wget https://data.gharchive.org/2025-01-01-{0..23}.json.gz
-```
-If your computer is trash, download fewer hours by adjusting the {0..23} range.
+    ```bash
+    for month in {01..03}; do
+        for day in {01..31}; do
+            for hour in {0..23}; do
+                curl -O https://data.gharchive.org/2025-${month}-${day}-${hour}.json.gz
+            done
+        done
+    done
+    ```
+    If your computer is trash, download fewer months/days/hours by adjusting the {0..n} range.
