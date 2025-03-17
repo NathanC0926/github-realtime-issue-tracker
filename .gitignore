@@ -1,9 +1,6 @@
 # Ignore data folder and all its contents
 data/
-datap/
-filtered_issues_events.parquet/*
-# Ignore metastore database
-metastore_db/
+data_month/
 
 # Ignore all log files
 *.log
