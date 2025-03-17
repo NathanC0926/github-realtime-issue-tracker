@@ -1,19 +1,15 @@
 # GitHub Realtime Issue Tracker
 
 ## 🚀 Setup Instructions
+Prereq: Docker
 
-1. **Clone the repository and navigate into the project directory**  
-   ```bash
-   git clone https://github.com/YOUR-USERNAME/github-realtime-issue-tracker.git
-   cd github-realtime-issue-tracker
-    ```
-2. **Run the Setup Using Make. For the first-time setup, run:**
+1. **Run the Setup Using Make. For the first-time setup, run:**
     ```bash
     make up
     ```
     ***Look at the Makefile for more commands.***
     
-3. **📥 Downloading the Dataset**
+2. **📥 Downloading the Dataset**
     ```bash
     cd data
     for month in {01..03}; do
