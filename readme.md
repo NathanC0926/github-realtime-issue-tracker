@@ -15,6 +15,7 @@
     
 3. **📥 Downloading the Dataset**
     ```bash
+    cd data
     for month in {01..03}; do
         for day in {01..31}; do
             for hour in {0..23}; do
